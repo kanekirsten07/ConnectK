@@ -65,6 +65,42 @@ public class connectK
         wins        = b.getWins();
         InitBoard();
     }
+    
+    public int heuristicEval(Vector[] board)
+    {
+    	int heuristic = rowEvaluation(board) + columnEvaluation(board);
+    	
+    	return heuristic;
+    }
+    //evaluate each row; sum up the number of icons of the same type (i.e. the computer player's icon, the cat) as long as there is no opposing player in between them.
+    // The algorithm checks each for for all possible win scenarios adding up to wins within a row
+    public int rowEvaluation(Vector[] board)
+    {
+    	int totalheuristic = 0;
+    	int columnstart = 0;
+    	for(int r=(rows-1); r>=0; r--)
+    	{
+    		do{
+    		for(int i = columnstart; i <wins; i++)
+    		{
+    			cO = (CharObj)board[r].elementAt(i);
+    			//if the current mark is the AI's, add one, otherwise subtract
+    		}
+    		columnstart++;
+    		}while(cols-columnstart >= wins);
+    	}
+    	return totalheuristic;
+    }
+    
+    public int columnEvaluation(Vector[] board)
+    {
+    	int totalheuristic = 0;
+    	for(int c=0; c<cols; c++)
+    	{
+    		
+    	}
+    	return totalheuristic;
+    }
         
     // This method is only a sample to show how you can make an AI move.
     // There are many required methods missing.  You have to implement these

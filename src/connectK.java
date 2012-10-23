@@ -54,6 +54,8 @@ public class connectK
     private int wins;
     private char computerMark;
     private CharObj cO;
+    //2d array, which is a reconstruction of the current board state. To be used for heuristic evaluation
+    private int [][] representationboard;
     
     connectK(pBoard b) //constructor
     {
@@ -66,8 +68,12 @@ public class connectK
         InitBoard();
     }
     
+   
+   
+   
     public int heuristicEval(Vector[] board)
     {
+    
     	int heuristic = rowEvaluation(board) + columnEvaluation(board);
     	
     	return heuristic;
@@ -84,6 +90,7 @@ public class connectK
     		for(int i = columnstart; i <wins; i++)
     		{
     			cO = (CharObj)board[r].elementAt(i);
+    			
     			//if the current mark is the AI's, add one, otherwise subtract
     		}
     		columnstart++;
@@ -101,13 +108,20 @@ public class connectK
     	}
     	return totalheuristic;
     }
+    
+    public int diagonalEvaluation(Vector[] board)
+    {
+    	return 0;
+    }
         
     // This method is only a sample to show how you can make an AI move.
     // There are many required methods missing.  You have to implement these
     // to make a best AI move.
     public void nextMove()
     {
+    	representationboard= new int [rows][cols];
         copyBoard();
+        
         boolean lbreak = false;
         for(int r=(rows-1); r>=0;r--)
         {
@@ -118,14 +132,15 @@ public class connectK
                 {
                     pB.setRow(r);   //return an AI row move.  This is how you return an AI row.  You must use this interface.
                     pB.setCol(c);   //return an AI col move.  This is how you return an AI col.  You must use this interface.
-                    lbreak = true;
+                    lbreak=true;
+                    
                     break;
                 }
             }
             if(lbreak)
                 break;
         }
-    }  
+    } 
     
         /*
 	    method: InitBoard
@@ -169,7 +184,24 @@ public class connectK
             for(int i=0; i<cols; i++)
             {
                 board[j].setElementAt(temp[j].elementAt(i), i);
+                cO= (CharObj) board[j].elementAt(i);
+                if(cO.mark == constant.X)
+                {
+                	representationboard[j][i]= 1;
+                	System.out.print("1");
+                }else if(cO.mark == constant.O)
+                {
+                	representationboard[j][i]= 2;
+                	System.out.print("2");
+                }else
+                {
+                	representationboard[j][i]= 0;
+                	System.out.print("0");
+                }
+                	
+               
             }
+            System.out.println("");
         }
     }    
 }

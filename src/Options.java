@@ -89,7 +89,7 @@ public class Options extends Dialog {
 			rect1.setBevelStyle(symantec.itools.awt.shape.Rect.BEVEL_LOWERED);
 		}
 		catch(java.beans.PropertyVetoException e) { }
-		add(rect1);
+		//add(rect1);
 		rect1.setBounds(24,192,253,108);
 		label1.setText(" Game Parameters ");
 		add(label1);

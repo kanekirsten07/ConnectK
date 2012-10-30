@@ -54,7 +54,7 @@ public class connectK
     private int wins;
     private char computerMark;
     private CharObj cO;
-    //2d array, which is a reconstruction of the current board state. To be used for heuristic evaluation
+    //2d array, which is a reconstruction of the current board state. To be used for heuristic evaluation. 0=whitespace, 1= player, 2= AI
     private int [][] representationboard;
     
     connectK(pBoard b) //constructor
@@ -71,27 +71,48 @@ public class connectK
    
    
    
-    public int heuristicEval(Vector[] board)
+    public int heuristicEval(int[][] board)
     {
     
-    	int heuristic = rowEvaluation(board) + columnEvaluation(board);
+    	int heuristic = rowEvaluation(board) + columnEvaluation(board)+ diagonalEvaluation(board);
     	
     	return heuristic;
     }
     //evaluate each row; sum up the number of icons of the same type (i.e. the computer player's icon, the cat) as long as there is no opposing player in between them.
     // The algorithm checks each for for all possible win scenarios adding up to wins within a row
-    public int rowEvaluation(Vector[] board)
+    public int rowEvaluation(int[][] board)
     {
     	int totalheuristic = 0;
     	int columnstart = 0;
     	for(int r=(rows-1); r>=0; r--)
     	{
     		do{
+    			int numAIpiecesseen = 0;
     		for(int i = columnstart; i <wins; i++)
     		{
-    			cO = (CharObj)board[r].elementAt(i);
+    			//cO = (CharObj)board[r].elementAt(i);
+    			/* In each row, iterate through each column up to the number of pieces are required to win (i.e. 4). If the new move plusotherse seen are equal to
+    			 * 1, add 1. If 1 has been seen and the new move adds another next to it, add 4. If two have been spotted next to the new move, add 32. If whitespace breaks 
+    			 * any of the possible win scenarios, reset the AI piece counter. If the player piece blocks any of these, subtract 1 from the total heuristic
+    			 * 
+    			 * */
+    			if(board[r][i] == 2)
+    			{
+    				switch(numAIpiecesseen){
+    				case(0): totalheuristic += 1;
+    				case(1): totalheuristic += 4;
+    				case(3): totalheuristic += 32;
+    				}
+    				numAIpiecesseen++;
+    			}else if(board[r][i] == 0)
+    			{
+    				numAIpiecesseen =0;
+    			}else
+    			{
+    				numAIpiecesseen = 0;
+    				totalheuristic-= 10;
+    			}
     			
-    			//if the current mark is the AI's, add one, otherwise subtract
     		}
     		columnstart++;
     		}while(cols-columnstart >= wins);
@@ -99,17 +120,41 @@ public class connectK
     	return totalheuristic;
     }
     
-    public int columnEvaluation(Vector[] board)
+    public int columnEvaluation(int[][] board)
     {
     	int totalheuristic = 0;
+    	int rowstart = 0;
     	for(int c=0; c<cols; c++)
     	{
-    		
+    		do{
+    			int numAIpiecesseen = 0;
+    		for(int i = rowstart; i <wins; i++)
+    		{
+    			if(board[i][c] == 2)
+    			{
+    				switch(numAIpiecesseen){
+    				case(0): totalheuristic += 1;
+    				case(1): totalheuristic += 4;
+    				case(3): totalheuristic += 32;
+    				}
+    				numAIpiecesseen++;
+    			}else if(board[i][c] == 0)
+    			{
+    				numAIpiecesseen =0;
+    			}else
+    			{
+    				numAIpiecesseen = 0;
+    				totalheuristic-= 10;
+    			}
+    			
+    		}
+    		rowstart++;
+    		}while(rows-rowstart >= wins);
     	}
     	return totalheuristic;
     }
     
-    public int diagonalEvaluation(Vector[] board)
+    public int diagonalEvaluation(int[][] board)
     {
     	return 0;
     }
@@ -121,7 +166,7 @@ public class connectK
     {
     	representationboard= new int [rows][cols];
         copyBoard();
-        
+        System.out.println(rowEvaluation(representationboard));
         boolean lbreak = false;
         for(int r=(rows-1); r>=0;r--)
         {
@@ -188,15 +233,15 @@ public class connectK
                 if(cO.mark == constant.X)
                 {
                 	representationboard[j][i]= 1;
-                	System.out.print("1");
+                	//System.out.print("1");
                 }else if(cO.mark == constant.O)
                 {
                 	representationboard[j][i]= 2;
-                	System.out.print("2");
+                	//System.out.print("2");
                 }else
                 {
                 	representationboard[j][i]= 0;
-                	System.out.print("0");
+                	//System.out.print("0");
                 }
                 	
                

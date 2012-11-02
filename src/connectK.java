@@ -8,6 +8,7 @@
 
 *******************************************************/
 
+import java.util.ArrayList;
 import java.util.Vector;
 import java.awt.*;
 
@@ -88,6 +89,7 @@ public class connectK
     	{
     		do{
     			int numAIpiecesseen = 0;
+    			int numpersonplayersseen = 0;
     		for(int i = columnstart; i <wins; i++)
     		{
     			//cO = (CharObj)board[r].elementAt(i);
@@ -98,19 +100,19 @@ public class connectK
     			 * */
     			if(board[r][i] == 2)
     			{
-    				switch(numAIpiecesseen){
-    				case(0): totalheuristic += 1;
-    				case(1): totalheuristic += 4;
-    				case(3): totalheuristic += 32;
-    				}
+    				numpersonplayersseen = 0;
     				numAIpiecesseen++;
+    				totalheuristic += 10*numAIpiecesseen;
+    				
     			}else if(board[r][i] == 0)
     			{
     				numAIpiecesseen =0;
+    				numpersonplayersseen = 0;
     			}else
     			{
     				numAIpiecesseen = 0;
-    				totalheuristic-= 10;
+    				numpersonplayersseen++;
+    				totalheuristic-= 10*numpersonplayersseen;
     			}
     			
     		}
@@ -118,6 +120,30 @@ public class connectK
     		}while(cols-columnstart >= wins);
     	}
     	return totalheuristic;
+    }
+    
+    public ArrayList<Move> generateMovesGravityOn(int[][]board)
+    {
+    	ArrayList<Move> temp = new ArrayList<Move>();
+    	for(int c=0; c<cols; c++)
+    	{
+    		
+    		for(int r=(rows-1); r>=0; r--)
+    		{
+    			if(board[r][c]== 0)
+    			{
+    				Move m = new Move(board, r, c);
+    				temp.add(m);
+    				break;
+    			}
+    		}
+    	}
+    	return temp;
+    }
+    
+    public ArrayList<Move> generateMovesGravityOff()
+    {
+    	return null;
     }
     
     public int columnEvaluation(int[][] board)
@@ -166,7 +192,11 @@ public class connectK
     {
     	representationboard= new int [rows][cols];
         copyBoard();
-        System.out.println(rowEvaluation(representationboard));
+        ArrayList<Move> temp = generateMovesGravityOn(representationboard);
+        for(int i = 0; i < temp.size(); i++)
+        {
+        	System.out.println(temp.get(i).toString());
+        }
         boolean lbreak = false;
         for(int r=(rows-1); r>=0;r--)
         {

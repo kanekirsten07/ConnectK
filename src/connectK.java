@@ -132,7 +132,7 @@ public class connectK
     		{
     			if(board[r][c]== 0)
     			{
-    				Move m = new Move(board, r, c);
+    				Move m = new Move( r, c);
     				temp.add(m);
     				break;
     			}
@@ -179,7 +179,84 @@ public class connectK
     	}
     	return totalheuristic;
     }
+    //Alternate heuristic to evaluate the board state. Can be used with the heuristic above to obtain the vector product heuristic
+    public int numWinPaths(int moverow, int movecolumn)
+    {
+    	return winPathsHorizontal(moverow,movecolumn) + 
+    	winPathVertical(moverow,movecolumn) +
+    	winPathsDiagonal(moverow,movecolumn);
+    }
     
+    public int winPathsHorizontal(int row, int column)
+    {
+    	int totalheuristic = 0;
+    	int tempheuristic = 0;
+    	for(int i = 0; i< wins; i++)
+    	{
+    		if(column+i > cols){ 
+    			break;
+    		}else if(representationboard[row+i][column] != 1)
+    		{
+    			tempheuristic++;
+    		}else {
+    			tempheuristic = 0;
+    			break;
+    		}
+    	}
+    	totalheuristic += tempheuristic;
+    	for(int i = 0; i< wins; i++)
+    	{
+    		if(column-i < cols){ 
+    			break;
+    		}else if(representationboard[row+i][column] != 1)
+    		{
+    			tempheuristic++;
+    		}else 
+    			{
+    			tempheuristic = 0;
+    			break;
+    			}
+    	}
+    	totalheuristic += tempheuristic;
+    	return totalheuristic;
+    }
+    public int winPathVertical(int row, int column)
+    {
+    	int totalheuristic = 0;
+    	int tempheuristic = 0;
+    	for(int i = 0; i< wins; i++)
+    	{
+    		
+    		if(row+i > rows){ 
+    			break;
+    		}else if(representationboard[row+i][column] != 1)
+    		{
+    			tempheuristic++;
+    		}else {
+    			tempheuristic = 0;
+    			break;
+    		}
+    	}
+    	totalheuristic += tempheuristic;
+    	for(int i = 0; i< wins; i++)
+    	{
+    		
+    		if(row-i < rows){ 
+    			break;
+    		}else if(representationboard[row+i][column] != 1)
+    		{
+    			tempheuristic++;
+    		}else{
+    			tempheuristic = 0;
+    			break;}
+    	}
+    	totalheuristic += tempheuristic;
+    	return totalheuristic;
+    }
+    public int winPathsDiagonal(int row, int column)
+    {
+    	return 0;
+    }
     public int diagonalEvaluation(int[][] board)
     {
     	return 0;

@@ -2,28 +2,32 @@
 public class Move {
 	
 	
-	private int [][]state ;
+	
 	private int newpiecerow;
 	private int newpiececolumn;
-	public Move (int [][]boardstate, int row, int column)
+	private int heuristicvalue;
+	
+	// Moves will be represented solely as the coordinates of their piece, so save memory space
+	public Move ( int row, int column)
 	{
-		state = new int [boardstate.length][boardstate[0].length];
-		for(int r=boardstate.length-1; r>=0; r--)
-    	{
-    		
-    		for(int c=0; c<boardstate[0].length; c++)
-    		{
-    			state[r][c] = boardstate[r][c];
-    		}
-    	}
+		
 		this.newpiecerow = row;
 		this.newpiececolumn = column;
-		this.state[row][column] = 2;
+		
+	}
+	public int getHeuristic()
+	{
+		return heuristicvalue;
 	}
 	
-	public int[][] getState()
+	public int getRow()
 	{
-		return this.state;
+		return newpiecerow;
+	}
+	
+	public int getCol()
+	{
+		return newpiececolumn;
 	}
 	
 	

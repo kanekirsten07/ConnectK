@@ -1,7 +1,7 @@
 /******************************************************
 
    Class: ConnectK.java
-   purpose: Return AI moves - a row and col number. 
+   purpose: Return AI moves - a row and col number.
    Author: Thuan Truong
    E-mail: tim@drimgmt.com
    Note: This is ONLY a sample
@@ -15,7 +15,7 @@ import java.awt.*;
 public class connectK
 {
 /////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 //	            Private variables definition
 //
 //              rows:	number of rows in the game board
@@ -57,7 +57,12 @@ public class connectK
     private CharObj cO;
     //2d array, which is a reconstruction of the current board state. To be used for heuristic evaluation. 0=whitespace, 1= player, 2= AI
     private int [][] representationboard;
-    
+
+    public static final int AI_MOVE=2, HUMAN_MOVE=1, EMPTY_SPACE=0;
+
+    private Move bestMove=null; //this is the best move selected by whichever algorithm is called.
+
+
     connectK(pBoard b) //constructor
     {
         pB = b;        // use all of these public interfaces to get important
@@ -68,15 +73,15 @@ public class connectK
         wins        = b.getWins();
         InitBoard();
     }
-    
-   
-   
-   
+
+
+
+
     public int heuristicEval(int[][] board)
     {
-    
+
     	int heuristic = rowEvaluation(board) + columnEvaluation(board)+ diagonalEvaluation(board);
-    	
+
     	return heuristic;
     }
     //evaluate each row; sum up the number of icons of the same type (i.e. the computer player's icon, the cat) as long as there is no opposing player in between them.
@@ -94,16 +99,16 @@ public class connectK
     		{
     			//cO = (CharObj)board[r].elementAt(i);
     			/* In each row, iterate through each column up to the number of pieces are required to win (i.e. 4). If the new move plusotherse seen are equal to
-    			 * 1, add 1. If 1 has been seen and the new move adds another next to it, add 4. If two have been spotted next to the new move, add 32. If whitespace breaks 
+    			 * 1, add 1. If 1 has been seen and the new move adds another next to it, add 4. If two have been spotted next to the new move, add 32. If whitespace breaks
     			 * any of the possible win scenarios, reset the AI piece counter. If the player piece blocks any of these, subtract 1 from the total heuristic
-    			 * 
+    			 *
     			 * */
     			if(board[r][i] == 2)
     			{
     				numpersonplayersseen = 0;
     				numAIpiecesseen++;
     				totalheuristic += 10*numAIpiecesseen;
-    				
+
     			}else if(board[r][i] == 0)
     			{
     				numAIpiecesseen =0;
@@ -114,20 +119,20 @@ public class connectK
     				numpersonplayersseen++;
     				totalheuristic-= 10*numpersonplayersseen;
     			}
-    			
+
     		}
     		columnstart++;
     		}while(cols-columnstart >= wins);
     	}
     	return totalheuristic;
     }
-    
+
     public ArrayList<Move> generateMovesGravityOn(int[][]board)
     {
     	ArrayList<Move> temp = new ArrayList<Move>();
     	for(int c=0; c<cols; c++)
     	{
-    		
+
     		for(int r=(rows-1); r>=0; r--)
     		{
     			if(board[r][c]== 0)
@@ -140,12 +145,12 @@ public class connectK
     	}
     	return temp;
     }
-    
+
     public ArrayList<Move> generateMovesGravityOff()
     {
     	return null;
     }
-    
+
     public int columnEvaluation(int[][] board)
     {
     	int totalheuristic = 0;
@@ -172,7 +177,7 @@ public class connectK
     				numAIpiecesseen = 0;
     				totalheuristic-= 10;
     			}
-    			
+
     		}
     		rowstart++;
     		}while(rows-rowstart >= wins);
@@ -182,18 +187,18 @@ public class connectK
     //Alternate heuristic to evaluate the board state. Can be used with the heuristic above to obtain the vector product heuristic
     public int numWinPaths(int moverow, int movecolumn)
     {
-    	return winPathsHorizontal(moverow,movecolumn) + 
+    	return winPathsHorizontal(moverow,movecolumn) +
     	winPathVertical(moverow,movecolumn) +
     	winPathsDiagonal(moverow,movecolumn);
     }
-    
+
     public int winPathsHorizontal(int row, int column)
     {
     	int totalheuristic = 0;
     	int tempheuristic = 0;
     	for(int i = 0; i< wins; i++)
     	{
-    		if(column+i > cols){ 
+    		if(column+i > cols){
     			break;
     		}else if(representationboard[row+i][column] != 1)
     		{
@@ -206,12 +211,12 @@ public class connectK
     	totalheuristic += tempheuristic;
     	for(int i = 0; i< wins; i++)
     	{
-    		if(column-i < cols){ 
+    		if(column-i < cols){
     			break;
     		}else if(representationboard[row+i][column] != 1)
     		{
     			tempheuristic++;
-    		}else 
+    		}else
     			{
     			tempheuristic = 0;
     			break;
@@ -226,8 +231,8 @@ public class connectK
     	int tempheuristic = 0;
     	for(int i = 0; i< wins; i++)
     	{
-    		
-    		if(row+i > rows){ 
+
+    		if(row+i > rows){
     			break;
     		}else if(representationboard[row+i][column] != 1)
     		{
@@ -240,8 +245,8 @@ public class connectK
     	totalheuristic += tempheuristic;
     	for(int i = 0; i< wins; i++)
     	{
-    		
-    		if(row-i < rows){ 
+
+    		if(row-i < rows){
     			break;
     		}else if(representationboard[row+i][column] != 1)
     		{
@@ -261,11 +266,74 @@ public class connectK
     {
     	return 0;
     }
-        
+
+
+        /**
+     * this will perform depth first search over all the possible moves from a given starting state
+     * It will only search to the given depth.
+     * This will set bestMove to the bestMove determined by depth-limited search.
+     *
+     * @param startingBoard
+     * @param depth
+     * @return returns the heuristic value for the best leaf node found.
+     */
+    private MoveValuePair depthLimitedSearch(int[][] startingBoard, int depth, boolean gravityOn, boolean max){
+        System.out.println("depth: "+depth);
+        ArrayList<Move> moves;
+        if (depth==0){
+            return new MoveValuePair(null, heuristicEval(startingBoard));
+        }
+        if (gravityOn){
+            moves = generateMovesGravityOn(startingBoard);
+        } else{
+            moves = generateMovesGravityOff();
+        }
+        int bestValueSoFar=Integer.MIN_VALUE;
+        Move bestMoveSoFar = null;
+        int minMaxMultiplier = 1;
+        if (!max)
+            minMaxMultiplier = -1; //this way min values will be chosen when selecting for min.
+        for (Move m: moves){
+            int[][] state = m.createState(startingBoard, (minMaxMultiplier==1 ? AI_MOVE : HUMAN_MOVE), rows, cols);
+            MoveValuePair pair= depthLimitedSearch(state, depth-1, gravityOn, !max);
+            int value = pair.value*minMaxMultiplier;
+            if (value>bestValueSoFar){
+                bestValueSoFar=value;
+                bestMoveSoFar=m;
+            }
+        }
+
+        return new MoveValuePair(bestMoveSoFar, bestValueSoFar);
+
+
+
+    }
+
+       //Renamed the old nextMove() nextMoveOriginal just in case we need to roll back to it.
+    public void nextMove(){
+        representationboard= new int [rows][cols];
+        copyBoard();
+        bestMove = null;
+        final int depth = 5; //this should be changed based on the time available to make a move.
+        MoveValuePair pair = depthLimitedSearch(representationboard, depth, true, true);
+        int bestHeuristicValue = pair.value;
+        bestMove = pair.move;
+        if (bestMove==null)
+            System.err.println("depthLimitedSearch() failed to find any moves. ");
+        System.out.println("Making move "+bestMove+"  with eventual value "+bestHeuristicValue);
+        makeMove(bestMove);
+
+
+
+
+    }
+
+
+
     // This method is only a sample to show how you can make an AI move.
     // There are many required methods missing.  You have to implement these
     // to make a best AI move.
-    public void nextMove()
+    public void nextMoveOriginal()
     {
     	representationboard= new int [rows][cols];
         copyBoard();
@@ -285,23 +353,23 @@ public class connectK
                     pB.setRow(r);   //return an AI row move.  This is how you return an AI row.  You must use this interface.
                     pB.setCol(c);   //return an AI col move.  This is how you return an AI col.  You must use this interface.
                     lbreak=true;
-                    
+
                     break;
                 }
             }
             if(lbreak)
                 break;
         }
-    } 
-    
+    }
+
         /*
 	    method: InitBoard
 	    purpose: Create a board array and set all elements to Blank:" "
 	    visiblity: called ONLY by other methods in this class
 	    paramters: NONE
 	    return NONE
-	*/  
-    
+	*/
+
     private void InitBoard()
     {
         board = new Vector[rows];
@@ -309,7 +377,7 @@ public class connectK
         {
             board[j] = new Vector(cols);
         }
-        
+
         for(int j=0; j<rows; j++)
         {
             for(int i=0; i<cols; i++)
@@ -318,19 +386,19 @@ public class connectK
             }
         }
     }
-            
+
     /*
 	    method: copyBoard
 	    purpose: Make a copy of board variable in pBoard class to variable board of this class
 	    visiblity: called ONLY by other methods in this class
 	    paramters: NONE
 	    return NONE
-	*/  
-    
+	*/
+
     private void copyBoard()
     {
         Vector[] temp = pB.getBoard();
-        
+
         for(int j=0; j<rows; j++)
         {
             for(int i=0; i<cols; i++)
@@ -350,10 +418,18 @@ public class connectK
                 	representationboard[j][i]= 0;
                 	//System.out.print("0");
                 }
-                	
-               
+
+
             }
             System.out.println("");
         }
-    }    
+    }
+
+     private void makeMove(Move move) {
+        int col, row;
+        col = move.getCol();
+        row = move.getRow();
+        pB.setRow(row);
+        pB.setCol(col);
+    }
 }

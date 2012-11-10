@@ -146,9 +146,23 @@ public class connectK
     	return temp;
     }
 
-    public ArrayList<Move> generateMovesGravityOff()
+    public ArrayList<Move> generateMovesGravityOff(int[][]board)
     {
-    	return null;
+    	ArrayList<Move> temp = new ArrayList<Move>();
+    	for(int c=0; c<cols; c++)
+    	{
+
+    		for(int r=(rows-1); r>=0; r--)
+    		{
+    			if(board[r][c]== 0)
+    			{
+    				Move m = new Move( r, c);
+    				temp.add(m);
+    				
+    			}
+    		}
+    	}
+    	return temp;
     }
 
     public int columnEvaluation(int[][] board)
@@ -196,11 +210,12 @@ public class connectK
     {
     	int totalheuristic = 0;
     	int tempheuristic = 0;
-    	for(int i = 0; i< wins; i++)
+    	for(int i = 1; i<= wins-1; i++)
     	{
-    		if(column+i > cols){
+    		if(column+i >= cols){
+    			tempheuristic =0;
     			break;
-    		}else if(representationboard[row+i][column] != 1)
+    		}else if(representationboard[row][column+i] != 1)
     		{
     			tempheuristic++;
     		}else {
@@ -209,11 +224,13 @@ public class connectK
     		}
     	}
     	totalheuristic += tempheuristic;
-    	for(int i = 0; i< wins; i++)
+    	tempheuristic = 0;
+    	for(int i = 1; i<= wins-1; i++)
     	{
-    		if(column-i < cols){
+    		if(column-i < 0){
+    			tempheuristic =0;
     			break;
-    		}else if(representationboard[row+i][column] != 1)
+    		}else if(representationboard[row][column-i] != 1)
     		{
     			tempheuristic++;
     		}else
@@ -229,10 +246,11 @@ public class connectK
     {
     	int totalheuristic = 0;
     	int tempheuristic = 0;
-    	for(int i = 0; i< wins; i++)
+    	for(int i = 1; i<= wins-1; i++)
     	{
 
-    		if(row+i > rows){
+    		if(row+i >= rows){
+    			tempheuristic =0;
     			break;
     		}else if(representationboard[row+i][column] != 1)
     		{
@@ -243,12 +261,14 @@ public class connectK
     		}
     	}
     	totalheuristic += tempheuristic;
-    	for(int i = 0; i< wins; i++)
+    	tempheuristic = 0;
+    	for(int i = 1; i<= wins-1; i++)
     	{
 
-    		if(row-i < rows){
+    		if(row-i < 0){
+    			tempheuristic =0;
     			break;
-    		}else if(representationboard[row+i][column] != 1)
+    		}else if(representationboard[row-i][column] != 1)
     		{
     			tempheuristic++;
     		}else{
@@ -260,7 +280,76 @@ public class connectK
     }
     public int winPathsDiagonal(int row, int column)
     {
-    	return 0;
+    	int totalheuristic = 0;
+    	int tempheuristic = 0;
+    	
+    		for(int i = 1; i<=wins-1; i++)
+    		{
+    			if((row-i < 0) || column -i < 0 )
+    			{
+    				tempheuristic =0;
+    				break;
+    			}else if(representationboard[row-i][column-i] != 1 )
+    			{
+    				tempheuristic++;
+    			}else {
+    				tempheuristic = 0;
+    				break;
+    			}
+    		}
+    		totalheuristic += tempheuristic;
+    		tempheuristic = 0;
+    		for(int i = 1; i<=wins-1; i++)
+    		{
+    			if((row-i < 0) || column +i >= cols )
+    			{
+    				tempheuristic =0;
+    				break;
+    			}else if(representationboard[row-i][column+i] != 1 )
+    			{
+    				tempheuristic++;
+    			}else {
+    				tempheuristic = 0;
+    				break;
+    			}
+    		}
+    		totalheuristic += tempheuristic;
+    		tempheuristic = 0;
+    		for(int i = 1; i<=wins-1; i++)
+    		{
+    			if((row+i >= rows) || column -i < 0 )
+    			{
+    				tempheuristic =0;
+    				break;
+    			}else if(representationboard[row+i][column-i] != 1 )
+    			{
+    				tempheuristic++;
+    			}else {
+    				tempheuristic = 0;
+    				break;
+    			}
+    		}
+    		totalheuristic += tempheuristic;
+    		tempheuristic = 0;
+    		
+    		for(int i = 1; i<=wins-1; i++)
+    		{
+    			if((row+i >= rows) || column +i >= cols )
+    			{
+    				tempheuristic =0;
+    				break;
+    			}else if(representationboard[row+i][column+i] != 1 )
+    			{
+    				tempheuristic++;
+    			}else {
+    				tempheuristic = 0;
+    				break;
+    			}
+    		}
+    		totalheuristic += tempheuristic;
+    		return totalheuristic;
+    		
+    	
     }
     public int diagonalEvaluation(int[][] board)
     {
@@ -286,7 +375,7 @@ public class connectK
         if (gravityOn){
             moves = generateMovesGravityOn(startingBoard);
         } else{
-            moves = generateMovesGravityOff();
+            moves = generateMovesGravityOff(startingBoard);
         }
         int bestValueSoFar=Integer.MIN_VALUE;
         Move bestMoveSoFar = null;
@@ -314,6 +403,7 @@ public class connectK
         representationboard= new int [rows][cols];
         copyBoard();
         bestMove = null;
+        
         final int depth = 5; //this should be changed based on the time available to make a move.
         MoveValuePair pair = depthLimitedSearch(representationboard, depth, true, true);
         int bestHeuristicValue = pair.value;

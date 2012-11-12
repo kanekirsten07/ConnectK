@@ -76,7 +76,7 @@ public class connectK
 
 
 
-
+    // Vector dot product of MaxWinPaths and Row/Column/Diagonal Evaluation
     public int heuristicEval(int[][] board)
     {
 
@@ -98,7 +98,7 @@ public class connectK
     		for(int i = columnstart; i <wins; i++)
     		{
     			//cO = (CharObj)board[r].elementAt(i);
-    			/* In each row, iterate through each column up to the number of pieces are required to win (i.e. 4). If the new move plusotherse seen are equal to
+    			/* In each row, iterate through each column up to the number of pieces are required to win (e.g. 4). If the new move plusotherse seen are equal to
     			 * 1, add 1. If 1 has been seen and the new move adds another next to it, add 4. If two have been spotted next to the new move, add 32. If whitespace breaks
     			 * any of the possible win scenarios, reset the AI piece counter. If the player piece blocks any of these, subtract 1 from the total heuristic
     			 *
@@ -353,7 +353,100 @@ public class connectK
     }
     public int diagonalEvaluation(int[][] board)
     {
-    	return 0;
+    	int totalheuristic = 0;
+    	int r1 = 0, c1 = 0;
+    	
+    	for(int r = wins -1; r <= rows-1; r++)
+    	{
+    		
+    		if(r < 0 || r > rows)
+    		{
+    			break;
+    		}
+    		int columnstart = 0;
+    		do{
+    		
+    		for(int i = columnstart, j = 0, intr = r; j < wins; i++, intr--, j++)
+    		{
+    			int numAIpiecesseen = 0;
+    			int numpersonplayersseen = 0;
+    			//System.out.println("Row: " + intr + "Column: " + i);
+    				if(board[intr][i] == 2)
+        			{
+        				numpersonplayersseen = 0;
+        				numAIpiecesseen++;
+        				totalheuristic += 10*numAIpiecesseen;
+
+        			}else if(board[intr][i] == 0)
+        			{
+        				numAIpiecesseen =0;
+        				numpersonplayersseen = 0;
+        			}else
+        			{
+        				numAIpiecesseen = 0;
+        				numpersonplayersseen++;
+        				totalheuristic-= 10*numpersonplayersseen;
+        			}
+    				/*
+    				if((j+1 == wins) && (intr > 0))
+    				{
+    					j = 0;
+    					i = columnstart;
+    					intr =r ;
+    				}
+    				*/
+    		}
+    		columnstart++;
+    		}while(columnstart <= cols-wins);
+    		//System.out.println("Break");
+    	}
+    	
+    	for(int r = wins -1; r <= rows-1; r++)
+    	{
+    		
+    		if(r < 0 || r > rows)
+    		{
+    			break;
+    		}
+    		int columnstart = cols-1;
+    		do{
+    		
+    		for(int i = columnstart, j = 0, intr = r; j < wins; i--, intr--, j++)
+    		{
+    			int numAIpiecesseen = 0;
+    			int numpersonplayersseen = 0;
+    			//System.out.println("Row: " + intr + "Column: " + i);
+    				if(board[intr][i] == 2)
+        			{
+        				numpersonplayersseen = 0;
+        				numAIpiecesseen++;
+        				totalheuristic += 10*numAIpiecesseen;
+
+        			}else if(board[intr][i] == 0)
+        			{
+        				numAIpiecesseen =0;
+        				numpersonplayersseen = 0;
+        			}else
+        			{
+        				numAIpiecesseen = 0;
+        				numpersonplayersseen++;
+        				totalheuristic-= 10*numpersonplayersseen;
+        			}
+    				/*
+    				if((j+1 == wins) && (intr > 0))
+    				{
+    					j = 0;
+    					i = columnstart;
+    					intr =r ;
+    				}
+    				*/
+    		}
+    		columnstart--;
+    		}while(columnstart >= wins-1);
+    		//System.out.println("Break");
+    	}
+    	
+    	return totalheuristic;
     }
 
 

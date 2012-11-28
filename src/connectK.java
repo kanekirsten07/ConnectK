@@ -61,6 +61,7 @@ public class connectK
     public static final int AI_MOVE=2, HUMAN_MOVE=1, EMPTY_SPACE=0;
 
     private Move bestMove=null; //this is the best move selected by whichever algorithm is called.
+    private Move nextMoveToEval;
 
 
     connectK(pBoard b) //constructor
@@ -80,7 +81,7 @@ public class connectK
     public int heuristicEval(int[][] board)
     {
 
-    	int heuristic = rowEvaluation(board) + columnEvaluation(board)+ diagonalEvaluation(board);
+    	int heuristic = rowEvaluation(board) + columnEvaluation(board)+ diagonalEvaluation(board)+numWinPaths(nextMoveToEval.getRow(), nextMoveToEval.getCol());
 
     	return heuristic;
     }
@@ -158,7 +159,7 @@ public class connectK
     			{
     				Move m = new Move( r, c);
     				temp.add(m);
-    				
+
     			}
     		}
     	}
@@ -282,7 +283,7 @@ public class connectK
     {
     	int totalheuristic = 0;
     	int tempheuristic = 0;
-    	
+
     		for(int i = 1; i<=wins-1; i++)
     		{
     			if((row-i < 0) || column -i < 0 )
@@ -331,7 +332,7 @@ public class connectK
     		}
     		totalheuristic += tempheuristic;
     		tempheuristic = 0;
-    		
+
     		for(int i = 1; i<=wins-1; i++)
     		{
     			if((row+i >= rows) || column +i >= cols )
@@ -348,24 +349,24 @@ public class connectK
     		}
     		totalheuristic += tempheuristic;
     		return totalheuristic;
-    		
-    	
+
+
     }
     public int diagonalEvaluation(int[][] board)
     {
     	int totalheuristic = 0;
     	int r1 = 0, c1 = 0;
-    	
+
     	for(int r = wins -1; r <= rows-1; r++)
     	{
-    		
+
     		if(r < 0 || r > rows)
     		{
     			break;
     		}
     		int columnstart = 0;
     		do{
-    		
+
     		for(int i = columnstart, j = 0, intr = r; j < wins; i++, intr--, j++)
     		{
     			int numAIpiecesseen = 0;
@@ -400,17 +401,17 @@ public class connectK
     		}while(columnstart <= cols-wins);
     		//System.out.println("Break");
     	}
-    	
+
     	for(int r = wins -1; r <= rows-1; r++)
     	{
-    		
+
     		if(r < 0 || r > rows)
     		{
     			break;
     		}
     		int columnstart = cols-1;
     		do{
-    		
+
     		for(int i = columnstart, j = 0, intr = r; j < wins; i--, intr--, j++)
     		{
     			int numAIpiecesseen = 0;
@@ -445,7 +446,7 @@ public class connectK
     		}while(columnstart >= wins-1);
     		//System.out.println("Break");
     	}
-    	
+
     	return totalheuristic;
     }
 
@@ -477,6 +478,7 @@ public class connectK
             minMaxMultiplier = -1; //this way min values will be chosen when selecting for min.
         for (Move m: moves){
             int[][] state = m.createState(startingBoard, (minMaxMultiplier==1 ? AI_MOVE : HUMAN_MOVE), rows, cols);
+            nextMoveToEval=m;
             MoveValuePair pair= depthLimitedSearch(state, depth-1, gravityOn, !max);
             int value = pair.value*minMaxMultiplier;
             if (value>bestValueSoFar){
@@ -496,7 +498,7 @@ public class connectK
         representationboard= new int [rows][cols];
         copyBoard();
         bestMove = null;
-        
+
         final int depth = 5; //this should be changed based on the time available to make a move.
         MoveValuePair pair = depthLimitedSearch(representationboard, depth, true, true);
         int bestHeuristicValue = pair.value;

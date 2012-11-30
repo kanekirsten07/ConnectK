@@ -62,16 +62,22 @@ public class connectK
 
     private Move bestMove=null; //this is the best move selected by whichever algorithm is called.
     private Move nextMoveToEval;
+    private boolean gravityOn;
+    private static final  int NUMBER_OF_SECONDS_PER_MOVE=5;
+    private int branchingFactorGravityOn, branchingFactorGravityOff;
 
 
     connectK(pBoard b) //constructor
     {
         pB = b;        // use all of these public interfaces to get important
                        // variables: rows, cols,isGon,mark, board, etc.
+        gravityOn=b.getG();
         depthLimit = constant.MAXDEPTH;
         rows        = b.getRows();
         cols        = b.getCols();
         wins        = b.getWins();
+        branchingFactorGravityOn = cols;
+        branchingFactorGravityOff=cols*rows;
         InitBoard();
     }
 
@@ -82,7 +88,7 @@ public class connectK
     {
 
     	int heuristic = rowEvaluation(board) + columnEvaluation(board)+ diagonalEvaluation(board)+numWinPaths(nextMoveToEval.getRow(), nextMoveToEval.getCol());
-
+//        heuristic = winPathsTest(board);
     	return heuristic;
     }
     //evaluate each row; sum up the number of icons of the same type (i.e. the computer player's icon, the cat) as long as there is no opposing player in between them.
@@ -498,14 +504,37 @@ public class connectK
         representationboard= new int [rows][cols];
         copyBoard();
         bestMove = null;
+        int branchingFactor;
+        if (gravityOn){
+            branchingFactor = branchingFactorGravityOn;
+        }
+        else{
+            branchingFactor = branchingFactorGravityOff;
+        }
+        int depth = 1;
+        boolean keepSearching = true;
+        MoveValuePair pair=null;
+        long veryFirstStart = System.currentTimeMillis();
+        long threshhold = NUMBER_OF_SECONDS_PER_MOVE*1000;
+        long maxTime = veryFirstStart+threshhold;
+        while (keepSearching){
+            long timeStart = System.currentTimeMillis();
+            pair = depthLimitedSearch(representationboard, depth, true, true);
+            long timeEnd = System.currentTimeMillis();
+            long timeTaken = timeEnd-timeStart;
+            long timeNeededForOneMoreSearch = timeTaken * branchingFactor; //each successive search will be bigger by a factor of branchingFactor
+            long timeAfterOneMoreSearch = timeNeededForOneMoreSearch+timeEnd;
+            if (timeAfterOneMoreSearch > maxTime)
+                keepSearching = false;
+            else
+                depth++;
+        }
 
-        final int depth = 5; //this should be changed based on the time available to make a move.
-        MoveValuePair pair = depthLimitedSearch(representationboard, depth, true, true);
         int bestHeuristicValue = pair.value;
         bestMove = pair.move;
         if (bestMove==null)
             System.err.println("depthLimitedSearch() failed to find any moves. ");
-        System.out.println("Making move "+bestMove+"  with eventual value "+bestHeuristicValue);
+        System.out.println("Making move "+bestMove+"  with eventual value "+bestHeuristicValue+" searched with depth "+depth);
         makeMove(bestMove);
 
 
@@ -617,4 +646,7 @@ public class connectK
         pB.setRow(row);
         pB.setCol(col);
     }
+
+
+
 }

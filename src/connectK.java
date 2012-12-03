@@ -87,7 +87,7 @@ public class connectK
     public int heuristicEval(int[][] board)
     {
 
-    	int heuristic = rowEvaluation(board) + columnEvaluation(board)+ diagonalEvaluation(board)+numWinPaths(nextMoveToEval.getRow(), nextMoveToEval.getCol());
+    	int heuristic = rowEvaluation(board)* winPathsHorizontal(nextMoveToEval.getRow(), nextMoveToEval.getCol()) + columnEvaluation(board)* winPathVertical(nextMoveToEval.getRow(), nextMoveToEval.getCol())+ diagonalEvaluation(board)* winPathsDiagonal(nextMoveToEval.getRow(), nextMoveToEval.getCol());
 //        heuristic = winPathsTest(board);
     	return heuristic;
     }

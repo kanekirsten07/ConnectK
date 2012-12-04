@@ -86,9 +86,13 @@ public class connectK
     // Vector dot product of MaxWinPaths and Row/Column/Diagonal Evaluation
     public int heuristicEval(int[][] board)
     {
+        int heuristic = 0;
 
-    	int heuristic = rowEvaluation(board)* winPathsHorizontal(nextMoveToEval.getRow(), nextMoveToEval.getCol()) + columnEvaluation(board)* winPathVertical(nextMoveToEval.getRow(), nextMoveToEval.getCol())+ diagonalEvaluation(board)* winPathsDiagonal(nextMoveToEval.getRow(), nextMoveToEval.getCol());
+    	heuristic = rowEvaluation(board)* winPathsHorizontal(nextMoveToEval.getRow(), nextMoveToEval.getCol()) + columnEvaluation(board)* winPathVertical(nextMoveToEval.getRow(), nextMoveToEval.getCol())+ diagonalEvaluation(board)* winPathsDiagonal(nextMoveToEval.getRow(), nextMoveToEval.getCol());
+    	//heuristic = rowEvaluation(board) + columnEvaluation(board)+ diagonalEvaluation(board); //+numWinPaths(nextMoveToEval.getRow(), nextMoveToEval.getCol());
 //        heuristic = winPathsTest(board);
+ //       heuristic = testLinesHeuristic(board)+centerPossessionHeuristic(board);
+//        heuristic = testStupidHeuristic(board);
     	return heuristic;
     }
     //evaluate each row; sum up the number of icons of the same type (i.e. the computer player's icon, the cat) as long as there is no opposing player in between them.
@@ -457,7 +461,7 @@ public class connectK
     }
 
 
-        /**
+     /**
      * this will perform depth first search over all the possible moves from a given starting state
      * It will only search to the given depth.
      * This will set bestMove to the bestMove determined by depth-limited search.
@@ -466,11 +470,15 @@ public class connectK
      * @param depth
      * @return returns the heuristic value for the best leaf node found.
      */
-    private MoveValuePair depthLimitedSearch(int[][] startingBoard, int depth, boolean gravityOn, boolean max){
+    private MoveValuePair olddepthLimitedSearch(int[][] startingBoard, int depth, boolean gravityOn, boolean max){
+
+        int minMaxMultiplier = 1;
+        if (!max)
+            minMaxMultiplier = -1; //this way min values will be chosen when selecting for min.
         System.out.println("depth: "+depth);
         ArrayList<Move> moves;
         if (depth==0){
-            return new MoveValuePair(null, heuristicEval(startingBoard));
+            return new MoveValuePair(null, minMaxMultiplier*heuristicEval(startingBoard));
         }
         if (gravityOn){
             moves = generateMovesGravityOn(startingBoard);
@@ -479,32 +487,62 @@ public class connectK
         }
         int bestValueSoFar=Integer.MIN_VALUE;
         Move bestMoveSoFar = null;
-        int minMaxMultiplier = 1;
-        if (!max)
-            minMaxMultiplier = -1; //this way min values will be chosen when selecting for min.
         for (Move m: moves){
-            int[][] state = m.createState(startingBoard, (minMaxMultiplier==1 ? AI_MOVE : HUMAN_MOVE), rows, cols);
+            int[][] state = m.createState(startingBoard, (max ? AI_MOVE : HUMAN_MOVE), rows, cols);
             nextMoveToEval=m;
-            MoveValuePair pair= depthLimitedSearch(state, depth-1, gravityOn, !max);
+            MoveValuePair pair= olddepthLimitedSearch(state, depth-1, gravityOn, !max);
             int value = pair.value*minMaxMultiplier;
             if (value>bestValueSoFar){
                 bestValueSoFar=value;
                 bestMoveSoFar=m;
             }
         }
-
         return new MoveValuePair(bestMoveSoFar, bestValueSoFar);
+    }
+
+    private Node depthLimitedSearch(Node node, int depth, boolean gravityOn, boolean max){
+        if (depth <= 0){
+            node.value=heuristicEval(node.board);
+            return node;
+        }
+        int moveType=HUMAN_MOVE;
+        if (max)
+            moveType=AI_MOVE;
+        ArrayList<Node> children = expand (node, moveType, gravityOn);
+        for (Node n: children){
+            n.value= depthLimitedSearch(n, depth-1, gravityOn, !max).value;
+        } Node best = null;
+        if (max){
+                best = pickGreatest(children);
+         }
+         if (!max){
+                best = pickLeast(children);
+         }
+         System.out.println("the best value: "+best.value);
+         return best;
+
 
 
 
     }
+
+
+
+
+
+
+
+
+
+
 
        //Renamed the old nextMove() nextMoveOriginal just in case we need to roll back to it.
     public void nextMove(){
         representationboard= new int [rows][cols];
         copyBoard();
         bestMove = null;
-        int branchingFactor;
+       // test();
+      /*  int branchingFactor;
         if (gravityOn){
             branchingFactor = branchingFactorGravityOn;
         }
@@ -530,14 +568,76 @@ public class connectK
                 depth++;
         }
 
-        int bestHeuristicValue = pair.value;
-        bestMove = pair.move;
+        int bestHeuristicValue = pair.value;*/
+
+        bestMove = iterativeDeepeningSearch(representationboard);
         if (bestMove==null)
             System.err.println("depthLimitedSearch() failed to find any moves. ");
-        System.out.println("Making move "+bestMove+"  with eventual value "+bestHeuristicValue+" searched with depth "+depth);
+        System.out.println("Making move "+bestMove);
         makeMove(bestMove);
 
 
+
+
+    }
+
+    private Move iterativeDeepeningSearch(int[][] board){
+        final int startingDepth = 1;
+
+
+
+        int branchingFactor;
+        if (gravityOn){
+            branchingFactor = branchingFactorGravityOn;
+        }
+        else{
+            branchingFactor = branchingFactorGravityOff;
+        }
+        int depth = startingDepth;
+        boolean keepLooking = true;
+        Move moveToMake=null;
+       long veryFirstStart = System.currentTimeMillis();
+        long threshhold = NUMBER_OF_SECONDS_PER_MOVE*1000;
+        long maxTime = veryFirstStart+threshhold;
+        while (keepLooking){
+
+            long timeStart = System.currentTimeMillis();
+            moveToMake = depthLimitedSearchStart(board, depth);
+            long timeEnd = System.currentTimeMillis();
+            long timeTaken = timeEnd-timeStart;
+            long timeNeededForOneMoreSearch = timeTaken * branchingFactor; //each successive search will be bigger by a factor of branchingFactor
+            long timeAfterOneMoreSearch = timeNeededForOneMoreSearch+timeEnd;
+            if (timeAfterOneMoreSearch > maxTime)
+                keepLooking = false;
+            else
+                depth++;
+
+        }
+        //return depthLimitedSearchStart(board, 5);
+        return moveToMake;
+    }
+
+    private Move depthLimitedSearchStart(int[][] board, int startingDepth){
+        //returns the move that should be made.
+
+        boolean gravityOn = this.gravityOn;
+        boolean max = true;
+
+        Node startNode = new Node();
+        startNode.board=board;
+        startNode.move=null;
+        ArrayList<Node> children = expand(startNode, AI_MOVE, gravityOn);
+        int bestValue= Integer.MIN_VALUE;
+        Node candidate = null;
+        for (Node n: children){
+            Node result = depthLimitedSearch (n, startingDepth -1, gravityOn, !max);
+            if (result.value>bestValue){
+                bestValue = result.value;
+                candidate = result;
+            }
+        }
+        System.out.println("returning "+candidate);
+        return candidate.move;
 
 
     }
@@ -645,7 +745,215 @@ public class connectK
         row = move.getRow();
         pB.setRow(row);
         pB.setCol(col);
+
     }
+
+     private int testStupidHeuristic (int[][] board){
+         int score = 0;
+
+         if (board[5][3]==AI_MOVE)
+             score++;
+
+         return score;
+     }
+
+
+
+     private int testLinesHeuristic(int[][] board){
+         ArrayList<Line> lines = new ArrayList<Line>();
+         for (int i =0; i<cols; i++){
+             for (int j= 0; j<rows; j++){
+                 int col = i, row =j;
+                 addAllValidLinesFromPoint (lines, row, col, board);
+             }
+         }
+         int value =0;
+
+         for (Line l: lines){
+             if (contains(l, HUMAN_MOVE, board)&&contains(l, AI_MOVE, board)){
+                 //value gets nothing because this line can be won by nobody.
+             }
+             else if (contains(l, HUMAN_MOVE, board)&&!contains(l, AI_MOVE, board)){
+                 int c = containsHowMany(l, HUMAN_MOVE, board);
+                 if (c==wins-2)
+                     c-=15;
+                 if (c==wins-1)
+                     c-=25;
+                 if (c == wins)
+                     c-=1000; //if this would be a lose state, minus a bunch
+                 //otherwise, minus however many pieces are in that line
+                 //c*=2;
+                 value-=c; //value decrements because human moves are bad.
+             }
+             else if (contains(l, AI_MOVE, board)&&!contains(l, HUMAN_MOVE, board)){
+                 int c = containsHowMany(l, AI_MOVE, board);
+                 if (c==wins)
+                     value+=50;
+                 value+=c; //this is a line we can win.
+             }//note that this says nothing about lines with no pieces from either player.
+         }
+         return value;
+     }
+     private int containsHowMany(Line l, int moveType, int[][] board){
+         int count =0;
+         for (Cell c: l.cells){
+             if (board[c.row][c.col]==moveType){
+                 count ++;
+             }
+         }
+         return count;
+     }
+
+
+      private boolean contains(Line l, int moveType, int[][] board) {
+        return (containsHowMany(l, moveType, board)>=1);
+    }
+
+     /**
+      * takes a starting location and makes a line starting at that location.
+      * @param row
+      * @param col
+      * @param board
+      * @return
+      */
+    private Line makeLine(int row, int col, int[][] board, boolean vert, boolean horiz, boolean backwardDiagonal) {
+        if (backwardDiagonal && (!vert||!horiz)){
+            throw new UnsupportedOperationException("for backwards diagonal to function, both very and horiz must be on. ");
+        }
+
+        int rMod, cMod;
+        rMod = (vert? 1 : 0);
+        cMod = (horiz? 1: 0);
+        if (backwardDiagonal){
+            cMod = -1;
+        }
+
+        Line l = new Line();
+        for (int i =0; i<wins; i++){
+            l.cells.add(new Cell (row+i*rMod, col+i*cMod));
+        }
+        return l;
+    }
+    private Line makeLineHorizontal (int row, int col, int[][] board){
+        return makeLine (row, col, board, false, true, false);
+    }
+    private Line makeLineVertical(int row, int col, int[][] board){
+        return makeLine (row, col, board, true, false, false);
+    }
+    private Line makeLineDiagonal(int row, int col, int[][] board){
+        return makeLine (row, col, board, true, true, false);
+    }
+    private Line makeLineReverseDiagonal(int row, int col, int[][] board){
+        return makeLine (row, col, board, true, true, true);
+    }
+
+
+
+    private void test() {
+        for (int i=0; i<rows; i++){
+            for (int j=0; j<cols; j++){
+                if (representationboard[i][j]==HUMAN_MOVE)
+                    System.out.println("human at: "+i+", "+j);
+            }
+        }
+        System.out.println(representationboard[3][0]);
+        Line l = makeLine(0, 4, this.representationboard, false, false, false);
+        System.out.println(l);
+
+        System.exit(-2);
+    }
+
+    private void addAllValidLinesFromPoint(ArrayList<Line> lines, int row, int col, int[][] board) {
+        ArrayList<Line> ls = new ArrayList<Line>();
+        Line l = makeLineHorizontal(row, col, board);
+        ls.add(l);
+        l=makeLineVertical(row, col, board);
+        ls.add(l);
+        l=makeLineDiagonal(row, col, board);
+        ls.add(l);
+        l=makeLineReverseDiagonal(row, col, board);
+        ls.add(l);
+        l=null;
+        for (Line a: ls){
+            if (isValidLine(a, board))
+                lines.add(a);
+        }
+
+
+
+
+    }
+
+    private boolean isValidLine(Line a, int[][] board) {
+        for (Cell c: a.cells){
+            if (c.col<0)
+                return false;
+            if (c.row<0)
+                return false;
+            if (c.col>=cols)
+                return false;
+            if (c.row>=rows)
+                return false;
+        }
+        return true;
+    }
+
+    private ArrayList<Node> expand(Node node,int moveType,  boolean gravityOn) {
+        ArrayList<Node> children = new ArrayList<Node>();
+        ArrayList<Move> moves;
+        if (gravityOn)
+            moves = generateMovesGravityOn (node.board);
+        else
+            moves = generateMovesGravityOff(node.board);
+        for (Move m: moves){
+            Node n = new Node();
+            n.move = m;
+            n.board= m.createState(node.board, moveType, rows, cols);
+            children.add(n);
+        }
+        return children;
+
+    }
+
+    private Node pickGreatest(ArrayList<Node> children) {
+        int bestValue=Integer.MIN_VALUE;
+        Node candidate=null;
+        for (Node n: children){
+            if (n.value>bestValue){
+                bestValue=n.value;
+                candidate = n;
+            }
+        }
+        return candidate;
+    }
+
+    private Node pickLeast(ArrayList<Node> children) {
+        int lowestValue = Integer.MAX_VALUE;
+        Node candidate = null;
+        for (Node n: children){
+            if (n.value<lowestValue){
+                candidate = n;
+                lowestValue = n.value;
+            }
+        }
+        return candidate;
+    }
+
+    private int centerPossessionHeuristic(int[][] board) {
+        int score = 0;
+        int col = cols-1;
+        col/=2;
+        int row = rows-1;;
+        if (!gravityOn)
+            row/=2;
+        if (board[row][col]==AI_MOVE)
+            score+=20;
+        return score;
+
+    }
+
+
+
 
 
 

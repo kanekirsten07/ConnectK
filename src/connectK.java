@@ -55,9 +55,14 @@ public class connectK
     private int wins;
     private char computerMark;
     private CharObj cO;
+    private boolean blocked = false;
+    private int blockedrow, blockedcol;
     //2d array, which is a reconstruction of the current board state. To be used for heuristic evaluation. 0=whitespace, 1= player, 2= AI
     private int [][] representationboard;
-
+    
+                                                   
+    						
+                                
     public static final int AI_MOVE=2, HUMAN_MOVE=1, EMPTY_SPACE=0;
 
     private Move bestMove=null; //this is the best move selected by whichever algorithm is called.
@@ -79,6 +84,218 @@ public class connectK
         branchingFactorGravityOn = cols;
         branchingFactorGravityOff=cols*rows;
         InitBoard();
+    }
+
+    public void searchForBlocking(int [][]board)
+    {
+    	
+    	
+    	
+    	
+    	//Search Rows
+    	for(int r=(rows-1); r>=0; r--)
+    	{
+    		int columnstart = 0;
+    		do{
+    			int numAIpiecesseen = 0;
+    			int numpersonplayersseen = 0;
+    		for(int i = 0; i <wins; i++)
+    		{
+    			
+    			if(board[r][columnstart+ i] == 2)
+    			{
+    				numpersonplayersseen = 0;
+    				numAIpiecesseen++;
+    				
+
+    			}else if(board[r][columnstart + i] == 0)
+    			{
+    				numAIpiecesseen =0;
+    				numpersonplayersseen = 0;
+    			}else
+    			{
+    				numAIpiecesseen = 0;
+    				numpersonplayersseen++;
+    				if (numpersonplayersseen == wins -1)
+    				{
+    					if( ((i+1) < cols) && board[r][i+1]== 0)
+    					{
+    						blocked = true;
+    						blockedrow = r;
+    						blockedcol = i+1;
+    					}else if((i-(wins-1) >= 0) && board[r][i-(wins-1)] == 0)
+    					{
+    						blocked = true;
+    						blockedrow = r;
+    						blockedcol = i-(wins-1);
+    					}
+    				}
+    			}
+
+    		}
+    		columnstart++;
+    		}while(cols-columnstart > wins);
+    	}
+    	if(blocked)
+    	{
+    		return;
+    	}
+    	//search columns
+    	for(int c=0; c<cols; c++)
+    	{
+    		int rowstart = 0;
+    		do{
+    			int numAIpiecesseen = 0;
+    			int numpersonplayersseen = 0;
+    		for(int i = rowstart; i <wins; i++)
+    		{
+    			if(board[i][c] == 2)
+    			{
+    				numpersonplayersseen = 0;
+    				numAIpiecesseen++;
+    				
+    			}else if(board[i][c] == 0)
+    			{
+    				numAIpiecesseen =0;
+    				numpersonplayersseen = 0;
+    			}else
+    			{
+    				numAIpiecesseen = 0;
+    				numpersonplayersseen++;
+    				if (numpersonplayersseen == wins -1)
+    				{
+    					if((i+1 <rows) && board[i+1][c]== 0)
+    					{
+    						blocked = true;
+    						blockedrow = i+1;
+    						blockedcol = c;
+    					}else if((i-(wins-1)>= 0 )&& board[i-(wins-1)][c] == 0)
+    					{
+    						blocked = true;
+    						blockedrow = i -(wins-1);
+    						blockedcol = c;
+    					}
+    				}
+    			}
+
+    		}
+    		rowstart++;
+    		}while(rows-rowstart >= wins);
+    	}
+    	if(blocked)
+    	{
+    		return;
+    	}
+    	//Search Diagonals left to right
+    	for(int r = wins -1; r <= rows-1; r++)
+    	{
+
+    		if(r < 0 || r > rows)
+    		{
+    			break;
+    		}
+    		int columnstart = 0;
+    		do{
+    			int numAIpiecesseen = 0;
+    			int numpersonplayersseen = 0;
+    		for(int i = columnstart, j = 0, intr = r; j < wins; i++, intr--, j++)
+    		{
+    			
+    			System.out.println("Row: " + intr + "Column: " + i);
+    				if(board[intr][i] == 2)
+        			{
+        				numpersonplayersseen = 0;
+        				numAIpiecesseen++;
+        				
+
+        			}else if(board[intr][i] == 0)
+        			{
+        				numAIpiecesseen =0;
+        				numpersonplayersseen = 0;
+        			}else
+        			{
+        				numAIpiecesseen = 0;
+        				numpersonplayersseen++;
+        				if(numpersonplayersseen == (wins-1))
+        				{
+        					if((intr-1 >= 0) && (i+1 < cols) && board[intr-1][i+1] == 0)
+        					{
+        						blocked = true;
+        						blockedrow = intr-1;
+        						blockedcol = i+1;
+        					}else if((intr+1 < rows)&& (i-(wins-1) >= 0) && board[intr+1][i-(wins-1)] ==0)
+        					{
+        						blocked = true;
+        						blockedrow = intr+1;
+        						blockedcol = i-(wins-1);
+        					}
+        					
+        				}
+        				
+        			}
+    				
+    		}
+    		columnstart++;
+    		}while(columnstart <= cols-wins);
+    		System.out.println("Break");
+    	}
+    	if(blocked)
+    	{
+    		System.out.println("True");
+    	}
+    	//Search Diagonals right to left
+    	for(int r = wins -1; r <= rows-1; r++)
+    	{
+
+    		if(r < 0 || r > rows)
+    		{
+    			break;
+    		}
+    		int columnstart = cols-1;
+    		do{
+    			int numAIpiecesseen = 0;
+    			int numpersonplayersseen = 0;
+    		for(int i = columnstart, j = 0, intr = r; j < wins; i--, intr--, j++)
+    		{
+    			
+    			System.out.println("Row: " + intr + "Column: " + i);
+    				if(board[intr][i] == 2)
+        			{
+        				numpersonplayersseen = 0;
+        				numAIpiecesseen++;
+        				
+
+        			}else if(board[intr][i] == 0)
+        			{
+        				numAIpiecesseen =0;
+        				numpersonplayersseen = 0;
+        			}else
+        			{
+        				numAIpiecesseen = 0;
+        				numpersonplayersseen++;
+        				if(numpersonplayersseen == (wins-1))
+        				{
+        					if((intr-1 >= 0) && (i-1 >= 0) && board[intr-1][i-1] == 0)
+        					{
+        						blocked = true;
+        						blockedrow = intr-1;
+        						blockedcol = i-1;
+        					}else if((intr+1 < rows)&& (i+(wins-1) < cols) && board[intr+1][i+(wins-1)] ==0)
+        					{
+        						blocked = true;
+        						blockedrow = intr+1;
+        						blockedcol = i+(wins-1);
+        					}
+        					
+        				}
+        			}
+    				
+    		}
+    		columnstart--;
+    		}while(columnstart >= wins-1);
+    		
+    	}
+    	
     }
 
 
@@ -381,11 +598,11 @@ public class connectK
     		}
     		int columnstart = 0;
     		do{
-
-    		for(int i = columnstart, j = 0, intr = r; j < wins; i++, intr--, j++)
-    		{
     			int numAIpiecesseen = 0;
     			int numpersonplayersseen = 0;
+    		for(int i = columnstart, j = 0, intr = r; j < wins; i++, intr--, j++)
+    		{
+    			
     			//System.out.println("Row: " + intr + "Column: " + i);
     				if(board[intr][i] == 2)
         			{
@@ -426,11 +643,11 @@ public class connectK
     		}
     		int columnstart = cols-1;
     		do{
-
-    		for(int i = columnstart, j = 0, intr = r; j < wins; i--, intr--, j++)
-    		{
     			int numAIpiecesseen = 0;
     			int numpersonplayersseen = 0;
+    		for(int i = columnstart, j = 0, intr = r; j < wins; i--, intr--, j++)
+    		{
+    			
     			//System.out.println("Row: " + intr + "Column: " + i);
     				if(board[intr][i] == 2)
         			{
@@ -448,18 +665,11 @@ public class connectK
         				numpersonplayersseen++;
         				totalheuristic-= 10*numpersonplayersseen;
         			}
-    				/*
-    				if((j+1 == wins) && (intr > 0))
-    				{
-    					j = 0;
-    					i = columnstart;
-    					intr =r ;
-    				}
-    				*/
+    				
     		}
     		columnstart--;
     		}while(columnstart >= wins-1);
-    		//System.out.println("Break");
+    		
     	}
 
     	return totalheuristic;
@@ -546,6 +756,17 @@ public class connectK
         representationboard= new int [rows][cols];
         copyBoard();
         bestMove = null;
+    //Search for wins-1 player pieces in a row, if it exists, forego the search and immediately block
+        searchForBlocking(representationboard);
+        
+        if(blocked)
+        {
+        	
+        	Move m = new Move(blockedrow, blockedcol);
+        	blocked = false;
+        	makeMove(m);
+        }else
+        {
        // test();
       /*  int branchingFactor;
         if (gravityOn){
@@ -580,7 +801,7 @@ public class connectK
             System.err.println("depthLimitedSearch() failed to find any moves. ");
         System.out.println("Making move "+bestMove);
         makeMove(bestMove);
-
+        }
 
 
 

@@ -100,13 +100,14 @@ public class connectK
     public int rowEvaluation(int[][] board)
     {
     	int totalheuristic = 0;
-    	int columnstart = 0;
+    	
     	for(int r=(rows-1); r>=0; r--)
     	{
+    		int columnstart = 0;
     		do{
     			int numAIpiecesseen = 0;
     			int numpersonplayersseen = 0;
-    		for(int i = columnstart; i <wins; i++)
+    		for(int i = 0; i <wins; i++)
     		{
     			//cO = (CharObj)board[r].elementAt(i);
     			/* In each row, iterate through each column up to the number of pieces are required to win (e.g. 4). If the new move plusotherse seen are equal to
@@ -114,13 +115,14 @@ public class connectK
     			 * any of the possible win scenarios, reset the AI piece counter. If the player piece blocks any of these, subtract 1 from the total heuristic
     			 *
     			 * */
-    			if(board[r][i] == 2)
+    			System.out.println("Row: " + r + "column : " + columnstart + i);
+    			if(board[r][columnstart + i] == 2)
     			{
     				numpersonplayersseen = 0;
     				numAIpiecesseen++;
     				totalheuristic += 10*numAIpiecesseen;
 
-    			}else if(board[r][i] == 0)
+    			}else if(board[r][columnstart + i] == 0)
     			{
     				numAIpiecesseen =0;
     				numpersonplayersseen = 0;
@@ -137,6 +139,7 @@ public class connectK
     	}
     	return totalheuristic;
     }
+
 
     public ArrayList<Move> generateMovesGravityOn(int[][]board)
     {
@@ -179,28 +182,29 @@ public class connectK
     public int columnEvaluation(int[][] board)
     {
     	int totalheuristic = 0;
-    	int rowstart = 0;
+    	
     	for(int c=0; c<cols; c++)
     	{
+    		int rowstart = 0;
     		do{
     			int numAIpiecesseen = 0;
-    		for(int i = rowstart; i <wins; i++)
+    			int numpersonplayersseen = 0;
+    		for(int i = 0; i <wins; i++)
     		{
-    			if(board[i][c] == 2)
+    			if(board[rowstart + i][c] == 2)
     			{
-    				switch(numAIpiecesseen){
-    				case(0): totalheuristic += 1;
-    				case(1): totalheuristic += 4;
-    				case(3): totalheuristic += 32;
-    				}
+    				numpersonplayersseen = 0;
     				numAIpiecesseen++;
-    			}else if(board[i][c] == 0)
+    				totalheuristic += 10*numAIpiecesseen;
+    			}else if(board[rowstart + i][c] == 0)
     			{
     				numAIpiecesseen =0;
+    				numpersonplayersseen = 0;
     			}else
     			{
     				numAIpiecesseen = 0;
-    				totalheuristic-= 10;
+    				numpersonplayersseen++;
+    				totalheuristic-= 10*numpersonplayersseen;
     			}
 
     		}
@@ -209,6 +213,7 @@ public class connectK
     	}
     	return totalheuristic;
     }
+
     //Alternate heuristic to evaluate the board state. Can be used with the heuristic above to obtain the vector product heuristic
     public int numWinPaths(int moverow, int movecolumn)
     {

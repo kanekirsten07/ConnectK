@@ -116,18 +116,19 @@ public class connectK
     			{
     				numAIpiecesseen = 0;
     				numpersonplayersseen++;
-    				if (numpersonplayersseen == wins -1)
+    				if (numpersonplayersseen == wins -1 || numpersonplayersseen== wins -2)
     				{
-    					if( ((i+1) < cols) && board[r][i+1]== 0)
+    					
+    					if( ((columnstart +i+1) < cols) && board[r][columnstart +i+1]== 0)
     					{
     						blocked = true;
     						blockedrow = r;
-    						blockedcol = i+1;
-    					}else if((i-(wins-1) >= 0) && board[r][i-(wins-1)] == 0)
+    						blockedcol = columnstart + i+1;
+    					}else if((columnstart +i-(wins-1) >= 0) && board[r][columnstart +i-(wins-1)] == 0)
     					{
     						blocked = true;
     						blockedrow = r;
-    						blockedcol = i-(wins-1);
+    						blockedcol = columnstart + i-(wins-1);
     					}
     				}
     			}
@@ -147,32 +148,34 @@ public class connectK
     		do{
     			int numAIpiecesseen = 0;
     			int numpersonplayersseen = 0;
-    		for(int i = rowstart; i <wins; i++)
-    		{
-    			if(board[i][c] == 2)
-    			{
-    				numpersonplayersseen = 0;
-    				numAIpiecesseen++;
-    				
-    			}else if(board[i][c] == 0)
-    			{
-    				numAIpiecesseen =0;
-    				numpersonplayersseen = 0;
-    			}else
-    			{
-    				numAIpiecesseen = 0;
-    				numpersonplayersseen++;
-    				if (numpersonplayersseen == wins -1)
+    			for(int i = 0; i <wins; i++)
+        		{
+        			if(board[rowstart + i][c] == 2)
+        			{
+        				numpersonplayersseen = 0;
+        				numAIpiecesseen++;
+        				
+        			}else if(board[rowstart + i][c] == 0)
+        			{
+        				numAIpiecesseen =0;
+        				numpersonplayersseen = 0;
+        			}else
+        			{
+        				numAIpiecesseen = 0;
+        				numpersonplayersseen++;
+        				
+        			
+    				if (numpersonplayersseen == wins -1|| numpersonplayersseen == wins -2)
     				{
-    					if((i+1 <rows) && board[i+1][c]== 0)
+    					if((rowstart +i+1 <rows) && board[rowstart + i+1][c]== 0)
     					{
     						blocked = true;
-    						blockedrow = i+1;
+    						blockedrow = rowstart + i+1;
     						blockedcol = c;
-    					}else if((i-(wins-1)>= 0 )&& board[i-(wins-1)][c] == 0)
+    					}else if((rowstart +i-(wins-1)>= 0 )&& board[rowstart + i-(wins-1)][c] == 0)
     					{
     						blocked = true;
-    						blockedrow = i -(wins-1);
+    						blockedrow = rowstart +i -(wins-1);
     						blockedcol = c;
     					}
     				}
@@ -201,7 +204,7 @@ public class connectK
     		for(int i = columnstart, j = 0, intr = r; j < wins; i++, intr--, j++)
     		{
     			
-    			System.out.println("Row: " + intr + "Column: " + i);
+    			//System.out.println("Row: " + intr + "Column: " + i);
     				if(board[intr][i] == 2)
         			{
         				numpersonplayersseen = 0;
@@ -305,7 +308,7 @@ public class connectK
     {
         int heuristic = 0;
 
-    	heuristic = rowEvaluation(board)* winPathsHorizontal(nextMoveToEval.getRow(), nextMoveToEval.getCol()) + columnEvaluation(board)* winPathVertical(nextMoveToEval.getRow(), nextMoveToEval.getCol())+ diagonalEvaluation(board)* winPathsDiagonal(nextMoveToEval.getRow(), nextMoveToEval.getCol());
+    	heuristic = rowEvaluation(board) + columnEvaluation(board)+ diagonalEvaluation(board) * numWinPaths(nextMoveToEval.getRow(), nextMoveToEval.getCol());
     	//heuristic = rowEvaluation(board) + columnEvaluation(board)+ diagonalEvaluation(board); //+numWinPaths(nextMoveToEval.getRow(), nextMoveToEval.getCol());
 //        heuristic = winPathsTest(board);
  //       heuristic = testLinesHeuristic(board)+centerPossessionHeuristic(board);
@@ -332,7 +335,7 @@ public class connectK
     			 * any of the possible win scenarios, reset the AI piece counter. If the player piece blocks any of these, subtract 1 from the total heuristic
     			 *
     			 * */
-    			System.out.println("Row: " + r + "column : " + columnstart + i);
+    			//System.out.println("Row: " + r + "column : " + columnstart + i);
     			if(board[r][columnstart + i] == 2)
     			{
     				numpersonplayersseen = 0;
@@ -690,7 +693,7 @@ public class connectK
         int minMaxMultiplier = 1;
         if (!max)
             minMaxMultiplier = -1; //this way min values will be chosen when selecting for min.
-        System.out.println("depth: "+depth);
+       // System.out.println("depth: "+depth);
         ArrayList<Move> moves;
         if (depth==0){
             return new MoveValuePair(null, minMaxMultiplier*heuristicEval(startingBoard));
@@ -725,7 +728,14 @@ public class connectK
             moveType=AI_MOVE;
         ArrayList<Node> children = expand (node, moveType, gravityOn);
         for (Node n: children){
-            n.value= depthLimitedSearch(n, depth-1, gravityOn, !max).value;
+        	
+            Node n1= depthLimitedSearch(n, depth-1, gravityOn, !max);
+            if(!(n1== null)){
+            int value = n1.value;
+            n.value = value;
+            }else {
+            	n.value = 0;
+            }
         } Node best = null;
         if (max){
                 best = pickGreatest(children);
@@ -733,7 +743,7 @@ public class connectK
          if (!max){
                 best = pickLeast(children);
          }
-         System.out.println("the best value: "+best.value);
+        // System.out.println("the best value: "+best.value);
          return best;
 
 
@@ -799,7 +809,7 @@ public class connectK
         bestMove = iterativeDeepeningSearch(representationboard);
         if (bestMove==null)
             System.err.println("depthLimitedSearch() failed to find any moves. ");
-        System.out.println("Making move "+bestMove);
+        //System.out.println("Making move "+bestMove);
         makeMove(bestMove);
         }
 
@@ -863,7 +873,7 @@ public class connectK
                 candidate = result;
             }
         }
-        System.out.println("returning "+candidate);
+        //System.out.println("returning "+candidate);
         return candidate.move;
 
 

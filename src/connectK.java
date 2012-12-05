@@ -856,6 +856,7 @@ public class connectK
         int bestValue= Integer.MIN_VALUE;
         Node candidate = null;
         for (Node n: children){
+            nextMoveToEval = n.move;
             Node result = depthLimitedSearch (n, startingDepth -1, gravityOn, !max);
             if (result.value>bestValue){
                 bestValue = result.value;

@@ -57,6 +57,7 @@ public class connectK
     private CharObj cO;
     private boolean blocked = false;
     private int blockedrow, blockedcol;
+    private int numplayersblocked = 0;
     //2d array, which is a reconstruction of the current board state. To be used for heuristic evaluation. 0=whitespace, 1= player, 2= AI
     private int [][] representationboard;
     
@@ -116,19 +117,36 @@ public class connectK
     			{
     				numAIpiecesseen = 0;
     				numpersonplayersseen++;
-    				if (numpersonplayersseen == wins -1 || numpersonplayersseen== wins -2)
+    				if (numpersonplayersseen == wins -1 || numpersonplayersseen== wins -2 && wins-2 != 1)
     				{
-    					
+    					if(numpersonplayersseen > numplayersblocked){
+    						blocked = false;
     					if( ((columnstart +i+1) < cols) && board[r][columnstart +i+1]== 0)
     					{
-    						blocked = true;
-    						blockedrow = r;
-    						blockedcol = columnstart + i+1;
+    						//check if blocking move will set up a win for the player. If it does, don't schedule the move
+    						if(!(r+1 < rows && (gravityOn && board[r+1][columnstart+i+1]== 0)))
+    						{
+    							
+    							blocked = true;
+        						blockedrow = r;
+        						blockedcol = columnstart + i+1;
+        						numplayersblocked = numpersonplayersseen;
+    							
+    						}
+    						
+    						
     					}else if((columnstart +i-(wins-1) >= 0) && board[r][columnstart +i-(wins-1)] == 0)
     					{
+    						if(!(r+1 < rows && (gravityOn && board[r+1][columnstart+i-(wins-1)]== 0)) )
+    						{
+    							
+    								numplayersblocked = numpersonplayersseen;
     						blocked = true;
     						blockedrow = r;
     						blockedcol = columnstart + i-(wins-1);
+    							
+    						}
+    					}
     					}
     				}
     			}
@@ -137,10 +155,7 @@ public class connectK
     		columnstart++;
     		}while(cols-columnstart > wins);
     	}
-    	if(blocked)
-    	{
-    		return;
-    	}
+    	
     	//search columns
     	for(int c=0; c<cols; c++)
     	{
@@ -165,19 +180,27 @@ public class connectK
         				numpersonplayersseen++;
         				
         			
-    				if (numpersonplayersseen == wins -1|| numpersonplayersseen == wins -2)
+    				if (numpersonplayersseen == wins -1|| numpersonplayersseen== wins -2 && wins-2 != 1)
     				{
+    					if(numpersonplayersseen > numplayersblocked){
     					if((rowstart +i+1 <rows) && board[rowstart + i+1][c]== 0)
     					{
+    						
+    							numplayersblocked = numpersonplayersseen;
     						blocked = true;
     						blockedrow = rowstart + i+1;
     						blockedcol = c;
+							
     					}else if((rowstart +i-(wins-1)>= 0 )&& board[rowstart + i-(wins-1)][c] == 0)
     					{
+    						
+    							numplayersblocked = numpersonplayersseen;
     						blocked = true;
     						blockedrow = rowstart +i -(wins-1);
     						blockedcol = c;
+							
     					}
+    				}
     				}
     			}
 
@@ -185,10 +208,7 @@ public class connectK
     		rowstart++;
     		}while(rows-rowstart >= wins);
     	}
-    	if(blocked)
-    	{
-    		return;
-    	}
+    	
     	//Search Diagonals left to right
     	for(int r = wins -1; r <= rows-1; r++)
     	{
@@ -219,18 +239,29 @@ public class connectK
         			{
         				numAIpiecesseen = 0;
         				numpersonplayersseen++;
-        				if(numpersonplayersseen == (wins-1))
+        				if(numpersonplayersseen == (wins-1)|| numpersonplayersseen== wins -2 && wins-2 != 1)
         				{
+        					if(numpersonplayersseen > numplayersblocked){
         					if((intr-1 >= 0) && (i+1 < cols) && board[intr-1][i+1] == 0)
         					{
+        						if(!(intr-1 >= 0 && i+1 < cols && (board[intr][i+1]== 0 && gravityOn)))
+        						{
+        							
+        								numplayersblocked = numpersonplayersseen;
         						blocked = true;
         						blockedrow = intr-1;
         						blockedcol = i+1;
+        							
+        						}
         					}else if((intr+1 < rows)&& (i-(wins-1) >= 0) && board[intr+1][i-(wins-1)] ==0)
         					{
+        						
+        							numplayersblocked = numpersonplayersseen;
         						blocked = true;
         						blockedrow = intr+1;
         						blockedcol = i-(wins-1);
+    							
+        					}
         					}
         					
         				}
@@ -240,12 +271,9 @@ public class connectK
     		}
     		columnstart++;
     		}while(columnstart <= cols-wins);
-    		System.out.println("Break");
+    		
     	}
-    	if(blocked)
-    	{
-    		System.out.println("True");
-    	}
+    	
     	//Search Diagonals right to left
     	for(int r = wins -1; r <= rows-1; r++)
     	{
@@ -261,7 +289,7 @@ public class connectK
     		for(int i = columnstart, j = 0, intr = r; j < wins; i--, intr--, j++)
     		{
     			
-    			System.out.println("Row: " + intr + "Column: " + i);
+    			//System.out.println("Row: " + intr + "Column: " + i);
     				if(board[intr][i] == 2)
         			{
         				numpersonplayersseen = 0;
@@ -276,18 +304,27 @@ public class connectK
         			{
         				numAIpiecesseen = 0;
         				numpersonplayersseen++;
-        				if(numpersonplayersseen == (wins-1))
+        				if(numpersonplayersseen == (wins-1)|| numpersonplayersseen== wins -2 && wins-2 != 1)
         				{
+        					if(numpersonplayersseen > numplayersblocked){
         					if((intr-1 >= 0) && (i-1 >= 0) && board[intr-1][i-1] == 0)
         					{
+        						if(!(intr < rows  && i-1>= 0 && (gravityOn && board[intr][i-1] == 0)) )
+        						{
+        						numplayersblocked = numpersonplayersseen;
         						blocked = true;
         						blockedrow = intr-1;
         						blockedcol = i-1;
-        					}else if((intr+1 < rows)&& (i+(wins-1) < cols) && board[intr+1][i+(wins-1)] ==0)
+        						}
+        					}else if((intr+(wins-1) < rows)&& (i+(wins-1) < cols) && board[intr+1][i+(wins-1)] ==0)
         					{
+        						
+        							numplayersblocked = numpersonplayersseen;
         						blocked = true;
-        						blockedrow = intr+1;
+        						blockedrow = intr+(wins-1);
         						blockedcol = i+(wins-1);
+    							
+        					}
         					}
         					
         				}
@@ -298,7 +335,7 @@ public class connectK
     		}while(columnstart >= wins-1);
     		
     	}
-    	
+    	numplayersblocked = 0;
     }
 
 
@@ -308,7 +345,7 @@ public class connectK
     {
         int heuristic = 0;
 
-    	heuristic = rowEvaluation(board) + columnEvaluation(board)+ diagonalEvaluation(board) * numWinPaths(nextMoveToEval.getRow(), nextMoveToEval.getCol());
+    	heuristic = rowEvaluation(board) * winPathsHorizontal(nextMoveToEval.getRow(), nextMoveToEval.getCol())+ columnEvaluation(board)* winPathVertical(nextMoveToEval.getRow(), nextMoveToEval.getCol())+ diagonalEvaluation(board) * winPathsDiagonal(nextMoveToEval.getRow(), nextMoveToEval.getCol()); 
     	//heuristic = rowEvaluation(board) + columnEvaluation(board)+ diagonalEvaluation(board); //+numWinPaths(nextMoveToEval.getRow(), nextMoveToEval.getCol());
 //        heuristic = winPathsTest(board);
  //       heuristic = testLinesHeuristic(board)+centerPossessionHeuristic(board);
@@ -771,7 +808,7 @@ public class connectK
         
         if(blocked)
         {
-        	
+        	//System.out.print("Blocking" + blockedrow + blockedcol);
         	Move m = new Move(blockedrow, blockedcol);
         	blocked = false;
         	makeMove(m);

@@ -5,6 +5,8 @@
    Author: Thuan Truong
    E-mail: tim@drimgmt.com
    Note: This is ONLY a sample
+   
+   AI implementation with max with paths, heuristic evaluation, iterative deepening search by Kirsten Kane and Thomas Bennett
 
 *******************************************************/
 
@@ -87,6 +89,15 @@ public class connectK
         InitBoard();
     }
 
+    /*
+     * This method is called when the AI is called to make a move. It scans the board's rows, columns, and diagonals for any possibility
+     * that the human player has for winning and blocks it (e.g. if the scan sees three player pieces in a row, it does not search for moves
+     * but instead calculates the best possible space to ensure that the human does not win (either the space after or wins-1 spaces behind it.
+     * 
+     * When the scan sees wins-1 player pieces in a row, it sets up to block, but additional conditionals have been added in the case that gravity is on
+     * such that if the space below where the blocking piece would be placed is blank, the blocking piece does not go there, as that would set up the player
+     * to a win.
+     */
     public void searchForBlocking(int [][]board)
     {
     	
@@ -628,7 +639,7 @@ public class connectK
     {
     	int totalheuristic = 0;
     	int r1 = 0, c1 = 0;
-
+    	// Analyze Left to right
     	for(int r = wins -1; r <= rows-1; r++)
     	{
 
@@ -673,7 +684,7 @@ public class connectK
     		}while(columnstart <= cols-wins);
     		//System.out.println("Break");
     	}
-
+    	// Analyze Right to left
     	for(int r = wins -1; r <= rows-1; r++)
     	{
 
@@ -853,7 +864,11 @@ public class connectK
 
 
     }
-
+/*
+ * 
+ * Iterative deepening search, implemented to search further and further down the tree, but making sure that at every pass, it does not run
+ * over the 5 second time limit.
+ */
     private Move iterativeDeepeningSearch(int[][] board){
         final int startingDepth = 1;
 
@@ -918,9 +933,7 @@ public class connectK
 
 
 
-    // This method is only a sample to show how you can make an AI move.
-    // There are many required methods missing.  You have to implement these
-    // to make a best AI move.
+    
     public void nextMoveOriginal()
     {
     	representationboard= new int [rows][cols];
@@ -981,6 +994,8 @@ public class connectK
 	    visiblity: called ONLY by other methods in this class
 	    paramters: NONE
 	    return NONE
+	    
+	    Also used to reconstruct a manipulatable representation of the board to place possible moves upon and scan for heuristic values
 	*/
 
     private void copyBoard()
